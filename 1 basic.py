@@ -1,2 +1,2 @@
-string="hi there sam!"
+string="hi there sam"
 print(string.split())

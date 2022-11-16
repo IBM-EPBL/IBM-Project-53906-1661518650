@@ -1,0 +1,236 @@
+In [289]:
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+In [290]:
+from google.colab import drive
+drive.mount('/content/gdrive')
+Drive already mounted at /content/gdrive; to attempt to forcibly remount, call drive.mount("/content/gdrive", force_remount=True).
+In [291]:
+df = pd.read_csv('/content/gdrive/MyDrive/Churn_Modelling.csv')
+df.describe()
+Out[291]:
+RowNumber	CustomerId	CreditScore	Age	Tenure	Balance	NumOfProducts	HasCrCard	IsActiveMember	EstimatedSalary	Exited
+count	10000.00000	1.000000e+04	10000.000000	10000.000000	10000.000000	10000.000000	10000.000000	10000.00000	10000.000000	10000.000000	10000.000000
+mean	5000.50000	1.569094e+07	650.528800	38.921800	5.012800	76485.889288	1.530200	0.70550	0.515100	100090.239881	0.203700
+std	2886.89568	7.193619e+04	96.653299	10.487806	2.892174	62397.405202	0.581654	0.45584	0.499797	57510.492818	0.402769
+min	1.00000	1.556570e+07	350.000000	18.000000	0.000000	0.000000	1.000000	0.00000	0.000000	11.580000	0.000000
+25%	2500.75000	1.562853e+07	584.000000	32.000000	3.000000	0.000000	1.000000	0.00000	0.000000	51002.110000	0.000000
+50%	5000.50000	1.569074e+07	652.000000	37.000000	5.000000	97198.540000	1.000000	1.00000	1.000000	100193.915000	0.000000
+75%	7500.25000	1.575323e+07	718.000000	44.000000	7.000000	127644.240000	2.000000	1.00000	1.000000	149388.247500	0.000000
+max	10000.00000	1.581569e+07	850.000000	92.000000	10.000000	250898.090000	4.000000	1.00000	1.000000	199992.480000	1.000000
+UNIVARIATE ANALYSIS
+
+In [292]:
+df[df["Geography"]=="Spain"]
+Out[292]:
+RowNumber	CustomerId	Surname	CreditScore	Geography	Gender	Age	Tenure	Balance	NumOfProducts	HasCrCard	IsActiveMember	EstimatedSalary	Exited
+1	2	15647311	Hill	608	Spain	Female	41	1	83807.86	1	0	1	112542.58	0
+4	5	15737888	Mitchell	850	Spain	Female	43	2	125510.82	1	1	1	79084.10	0
+5	6	15574012	Chu	645	Spain	Male	44	8	113755.78	2	1	0	149756.71	1
+11	12	15737173	Andrews	497	Spain	Male	24	3	0.00	2	1	0	76390.01	0
+14	15	15600882	Scott	635	Spain	Female	35	7	0.00	2	1	1	65951.65	0
+...	...	...	...	...	...	...	...	...	...	...	...	...	...	...
+9966	9967	15590213	Ch'en	479	Spain	Male	35	4	125920.98	1	1	1	20393.44	0
+9980	9981	15719276	T'ao	741	Spain	Male	35	6	74371.49	1	0	0	99595.67	0
+9987	9988	15588839	Mancini	606	Spain	Male	30	8	180307.73	2	1	1	1914.41	0
+9989	9990	15605622	McMillan	841	Spain	Male	28	4	0.00	2	1	1	179436.60	0
+9992	9993	15657105	Chukwualuka	726	Spain	Male	36	2	0.00	1	1	0	195192.40	0
+2477 rows × 14 columns
+
+BIVARIATE ANALYSIS
+
+In [293]:
+g_df = df[df["Geography"]=="Spain"]
+low = g_df["NumOfProducts"].min()
+high = g_df["NumOfProducts"].max()
+print(low,high)
+1 4
+MULTI-VARIATE ANALYSIS
+
+In [294]:
+young = g_df[df['Age']== 50]
+gen = young[df['Gender']== "Male"]
+print(gen)
+      RowNumber  CustomerId         Surname  CreditScore Geography Gender  \
+202         203    15600974              He          516     Spain   Male   
+1323       1324    15629244          Bryant          635     Spain   Male   
+1492       1493    15744517        Esposito          735     Spain   Male   
+2290       2291    15674880          Archer          658     Spain   Male   
+3310       3311    15746076        Saunders          506     Spain   Male   
+4304       4305    15770576         Hammond          555     Spain   Male   
+4367       4368    15675854         Douglas          573     Spain   Male   
+5040       5041    15749727  Chukwufumnanya          829     Spain   Male   
+5086       5087    15667289       Henderson          719     Spain   Male   
+5593       5594    15597968           Fyans          617     Spain   Male   
+6686       6687    15641285        Yusupova          621     Spain   Male   
+6726       6727    15633213           Rizzo          628     Spain   Male   
+7016       7017    15790254            Wood          741     Spain   Male   
+8029       8030    15732113         Butters          671     Spain   Male   
+8955       8956    15641319      Afanasyeva          518     Spain   Male   
+
+      Age  Tenure    Balance  NumOfProducts  HasCrCard  IsActiveMember  \
+202    50       5       0.00              1          0               1   
+1323   50       7  159453.64              2          0               0   
+1492   50       9       0.00              1          0               0   
+2290   50       2       0.00              2          1               0   
+3310   50       3       0.00              2          1               0   
+4304   50       7  128061.00              2          1               1   
+4367   50       0  159304.07              1          0               1   
+5040   50       7       0.00              2          0               1   
+5086   50       2       0.00              2          0               0   
+5593   50       7       0.00              1          1               0   
+6686   50       3  163085.79              1          0               1   
+6726   50       8       0.00              1          0               0   
+7016   50       1   78737.61              1          1               1   
+8029   50       8       0.00              1          0               1   
+8955   50       4       0.00              1          0               0   
+
+      EstimatedSalary  Exited  
+202         146145.93       1  
+1323         54560.79       1  
+1492        166677.35       1  
+2290         52137.73       0  
+3310         12016.79       0  
+4304         62375.10       0  
+4367        155915.24       1  
+5040        178458.86       0  
+5086         10772.13       0  
+5593        184839.70       1  
+6686        131048.36       0  
+6726        144366.83       1  
+7016         13018.96       0  
+8029          2560.11       0  
+8955        107112.25       1  
+/usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:1: UserWarning:
+
+Boolean Series key will be reindexed to match DataFrame index.
+
+/usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:2: UserWarning:
+
+Boolean Series key will be reindexed to match DataFrame index.
+
+DESCRIPTIVE ANALYSIS
+
+In [295]:
+lt = df["NumOfProducts"]
+cnt = 0
+for i in lt:
+  if(lt[i] == 1):
+    cnt = cnt + 1
+print(cnt)
+5144
+HANDLING THE NULL VALUES
+
+In [296]:
+df.isnull()
+Out[296]:
+RowNumber	CustomerId	Surname	CreditScore	Geography	Gender	Age	Tenure	Balance	NumOfProducts	HasCrCard	IsActiveMember	EstimatedSalary	Exited
+0	False	False	False	False	False	False	False	False	False	False	False	False	False	False
+1	False	False	False	False	False	False	False	False	False	False	False	False	False	False
+2	False	False	False	False	False	False	False	False	False	False	False	False	False	False
+3	False	False	False	False	False	False	False	False	False	False	False	False	False	False
+4	False	False	False	False	False	False	False	False	False	False	False	False	False	False
+...	...	...	...	...	...	...	...	...	...	...	...	...	...	...
+9995	False	False	False	False	False	False	False	False	False	False	False	False	False	False
+9996	False	False	False	False	False	False	False	False	False	False	False	False	False	False
+9997	False	False	False	False	False	False	False	False	False	False	False	False	False	False
+9998	False	False	False	False	False	False	False	False	False	False	False	False	False	False
+9999	False	False	False	False	False	False	False	False	False	False	False	False	False	False
+10000 rows × 14 columns
+
+FINDING THE OUTLIERS
+
+In [297]:
+import plotly.express as px
+
+x = df["IsActiveMember"]
+y = df["Age"]
+
+fig = px.scatter(x =x, y=y)
+fig.show()
+REPLACING THE OUTLIERS
+
+In [298]:
+ot = []
+dt = []
+at = df["Age"]
+mt = df["IsActiveMember"]
+for i in at:
+  if (30 <= at[i] <= 40):
+    ot.append(at[i])
+    dt.append(mt[i])
+    
+
+x = dt
+y = ot
+
+fig = px.scatter(x =x, y=y)
+fig.show()
+CATEGORICAL COLUMNS AND ENCODING
+
+In [299]:
+!pip install category_encoders
+import category_encoders as ce
+Looking in indexes: https://pypi.org/simple, https://us-python.pkg.dev/colab-wheels/public/simple/
+Requirement already satisfied: category_encoders in /usr/local/lib/python3.7/dist-packages (2.5.0)
+Requirement already satisfied: scikit-learn>=0.20.0 in /usr/local/lib/python3.7/dist-packages (from category_encoders) (1.0.2)
+Requirement already satisfied: patsy>=0.5.1 in /usr/local/lib/python3.7/dist-packages (from category_encoders) (0.5.2)
+Requirement already satisfied: statsmodels>=0.9.0 in /usr/local/lib/python3.7/dist-packages (from category_encoders) (0.12.2)
+Requirement already satisfied: numpy>=1.14.0 in /usr/local/lib/python3.7/dist-packages (from category_encoders) (1.21.6)
+Requirement already satisfied: scipy>=1.0.0 in /usr/local/lib/python3.7/dist-packages (from category_encoders) (1.7.3)
+Requirement already satisfied: pandas>=1.0.5 in /usr/local/lib/python3.7/dist-packages (from category_encoders) (1.3.5)
+Requirement already satisfied: pytz>=2017.3 in /usr/local/lib/python3.7/dist-packages (from pandas>=1.0.5->category_encoders) (2022.2.1)
+Requirement already satisfied: python-dateutil>=2.7.3 in /usr/local/lib/python3.7/dist-packages (from pandas>=1.0.5->category_encoders) (2.8.2)
+Requirement already satisfied: six in /usr/local/lib/python3.7/dist-packages (from patsy>=0.5.1->category_encoders) (1.15.0)
+Requirement already satisfied: joblib>=0.11 in /usr/local/lib/python3.7/dist-packages (from scikit-learn>=0.20.0->category_encoders) (1.1.0)
+Requirement already satisfied: threadpoolctl>=2.0.0 in /usr/local/lib/python3.7/dist-packages (from scikit-learn>=0.20.0->category_encoders) (3.1.0)
+In [300]:
+e = ce.BinaryEncoder(cols=['Gender'])
+df_binary = e.fit_transform(df)
+
+df_binary.head()
+Out[300]:
+RowNumber	CustomerId	Surname	CreditScore	Geography	Gender_0	Gender_1	Age	Tenure	Balance	NumOfProducts	HasCrCard	IsActiveMember	EstimatedSalary	Exited
+0	1	15634602	Hargrave	619	France	0	1	42	2	0.00	1	1	1	101348.88	1
+1	2	15647311	Hill	608	Spain	0	1	41	1	83807.86	1	0	1	112542.58	0
+2	3	15619304	Onio	502	France	0	1	42	8	159660.80	3	1	0	113931.57	1
+3	4	15701354	Boni	699	France	0	1	39	1	0.00	2	0	0	93826.63	0
+4	5	15737888	Mitchell	850	Spain	0	1	43	2	125510.82	1	1	1	79084.10	0
+SPLIT THE DATA INTO DEPENDENT AND INDEPENDENT VARIABLES
+
+In [301]:
+X = df.iloc[ : , :-1].values
+Y = df.iloc[ : , 4].values
+print(X)
+print(Y)
+[[1 15634602 'Hargrave' ... 1 1 101348.88]
+ [2 15647311 'Hill' ... 0 1 112542.58]
+ [3 15619304 'Onio' ... 1 0 113931.57]
+ ...
+ [9998 15584532 'Liu' ... 0 1 42085.58]
+ [9999 15682355 'Sabbatini' ... 1 0 92888.52]
+ [10000 15628319 'Walker' ... 1 0 38190.78]]
+['France' 'Spain' 'France' ... 'France' 'Germany' 'France']
+SCALING THE INDEPENDENT VARIABLES
+
+In [302]:
+!pip install statistics
+import statistics
+Looking in indexes: https://pypi.org/simple, https://us-python.pkg.dev/colab-wheels/public/simple/
+Requirement already satisfied: statistics in /usr/local/lib/python3.7/dist-packages (1.0.3.5)
+Requirement already satisfied: docutils>=0.3 in /usr/local/lib/python3.7/dist-packages (from statistics) (0.17.1)
+In [303]:
+a = df["CreditScore"]
+print(statistics.stdev(a))
+96.65329873613035
+SPLIT THE DATA INTO TRAINING AND TESTING
+
+In [304]:
+x = df["EstimatedSalary"]
+y = df["Balance"]
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25)
+print(x_train.shape, x_test.shape, y_train.shape, y_test.shape)
+(7500,) (2500,) (7500,) (2500,)

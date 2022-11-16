@@ -1,0 +1,158 @@
+In [18]:
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import layers
+from tensorflow.keras.models import Sequential
+import matplotlib.pyplot as plt
+In [12]:
+batch_size = 32
+img_height = 180
+img_width = 180
+data_dir = "/content/flowers"
+New Section
+Image Augmentation
+In [7]:
+data_augmentation = Sequential(
+  [
+    layers.RandomFlip("horizontal",input_shape=(img_height, img_width, 3)),
+    layers.RandomRotation(0.1),
+    layers.RandomZoom(0.1),
+  ]
+)
+Split dataset into training and testing sets
+In [13]:
+train_ds = tf.keras.utils.image_dataset_from_directory(
+  data_dir,
+  validation_split=0.2,
+  subset="training",
+  seed=123,
+  image_size=(img_height, img_width),
+  batch_size=batch_size)
+Found 4317 files belonging to 5 classes.
+Using 3454 files for training.
+In [ ]:
+val_ds = tf.keras.utils.image_dataset_from_directory(
+  data_dir,
+  validation_split=0.2,
+  subset="validation",
+  seed=123,
+  image_size=(img_height, img_width),
+  batch_size=batch_size)
+In [ ]:
+class_names = train_ds.class_names
+print(class_names)
+In [19]:
+plt.figure(figsize=(10, 10))
+for images, labels in train_ds.take(1):
+  for i in range(9):
+    ax = plt.subplot(3, 3, i + 1)
+    plt.imshow(images[i].numpy().astype("uint8"))
+    plt.title(class_names[labels[i]])
+    plt.axis("off")
+
+In [20]:
+normalization_layer = layers.Rescaling(1./255)
+In [21]:
+normalized_ds = train_ds.map(lambda x, y: (normalization_layer(x), y))
+image_batch, labels_batch = next(iter(normalized_ds))
+first_image = image_batch[0]
+# Notice the pixel values are now in `[0,1]`.
+print(np.min(first_image), np.max(first_image))
+0.0 0.97046
+Create the model and adding layers
+In [22]:
+num_classes = len(class_names)
+
+model = Sequential([
+  data_augmentation,
+  layers.Rescaling(1./255, input_shape=(img_height, img_width, 3)),
+  layers.Conv2D(16, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+  layers.Conv2D(32, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+  layers.Conv2D(64, 3, padding='same', activation='relu'),
+  layers.MaxPooling2D(),
+  layers.Flatten(),
+  layers.Dense(128, activation='relu'),
+  layers.Dense(num_classes)
+])
+Compile the model
+In [23]:
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+In [24]:
+epochs=10
+history = model.fit(
+  train_ds,
+  validation_data=val_ds,
+  epochs=epochs
+)
+Epoch 1/10
+108/108 [==============================] - 129s 1s/step - loss: 1.2868 - accuracy: 0.4519 - val_loss: 1.1234 - val_accuracy: 0.5249
+Epoch 2/10
+108/108 [==============================] - 125s 1s/step - loss: 1.0198 - accuracy: 0.6010 - val_loss: 0.9700 - val_accuracy: 0.6257
+Epoch 3/10
+108/108 [==============================] - 123s 1s/step - loss: 0.9337 - accuracy: 0.6462 - val_loss: 0.9390 - val_accuracy: 0.6304
+Epoch 4/10
+108/108 [==============================] - 123s 1s/step - loss: 0.8600 - accuracy: 0.6699 - val_loss: 0.8394 - val_accuracy: 0.6779
+Epoch 5/10
+108/108 [==============================] - 122s 1s/step - loss: 0.8278 - accuracy: 0.6853 - val_loss: 0.8582 - val_accuracy: 0.6744
+Epoch 6/10
+108/108 [==============================] - 122s 1s/step - loss: 0.8004 - accuracy: 0.7027 - val_loss: 0.8041 - val_accuracy: 0.6790
+Epoch 7/10
+108/108 [==============================] - 123s 1s/step - loss: 0.7469 - accuracy: 0.7157 - val_loss: 0.8067 - val_accuracy: 0.6871
+Epoch 8/10
+108/108 [==============================] - 122s 1s/step - loss: 0.7042 - accuracy: 0.7336 - val_loss: 0.8070 - val_accuracy: 0.7045
+Epoch 9/10
+108/108 [==============================] - 123s 1s/step - loss: 0.6772 - accuracy: 0.7432 - val_loss: 0.8691 - val_accuracy: 0.6663
+Epoch 10/10
+108/108 [==============================] - 121s 1s/step - loss: 0.6432 - accuracy: 0.7594 - val_loss: 0.7867 - val_accuracy: 0.7161
+In [25]:
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs_range = range(epochs)
+
+plt.figure(figsize=(8, 8))
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, loss, label='Training Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.show()
+
+Saving the model
+In [26]:
+model.save("flowers.m5")
+Testing the Model
+In [27]:
+sunflower_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/592px-Red_sunflower.jpg"
+sunflower_path = tf.keras.utils.get_file('Red_sunflower', origin=sunflower_url)
+
+img = tf.keras.utils.load_img(
+    sunflower_path, target_size=(img_height, img_width)
+)
+img_array = tf.keras.utils.img_to_array(img)
+img_array = tf.expand_dims(img_array, 0) # Create a batch
+
+predictions = model.predict(img_array)
+score = tf.nn.softmax(predictions[0])
+
+print(
+    "This image most likely belongs to {} with a {:.2f} percent confidence."
+    .format(class_names[np.argmax(score)], 100 * np.max(score))
+)
+Downloading data from https://storage.googleapis.com/download.tensorflow.org/example_images/592px-Red_sunflower.jpg
+122880/117948 [===============================] - 0s 0us/step
+131072/117948 [=================================] - 0s 0us/step
+This image most likely belongs to sunflower with a 99.99 percent confidence.
